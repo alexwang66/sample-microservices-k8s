@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-service
+spec:
+  ports:
+  - port: 2222
+    protocol: TCP
+    targetPort: 2222
+    nodePort: 30222
+  selector:
+    app: account-service
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: account-service
+  labels:
+    run: account-service
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: account-service
+    spec:
+      containers:
+      - name: account-service
+        image: docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/account-service:latest
+        ports:
+        - containerPort: 2222
+          protocol: TCP
+      imagePullSecrets:
+      - name: regcred
