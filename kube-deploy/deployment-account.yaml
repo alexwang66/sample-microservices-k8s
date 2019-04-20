@@ -27,9 +27,9 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/account-service:latest
+        image: art.local:8081/docker/account-service:latest
         ports:
         - containerPort: 2222
           protocol: TCP
       imagePullSecrets:
-      - name: regcred
+      - name: localregcred

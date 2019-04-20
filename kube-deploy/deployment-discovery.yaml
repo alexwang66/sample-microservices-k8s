@@ -28,9 +28,9 @@ spec:
     spec:
       containers:
       - name: discovery-service
-        image: docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:latest
+        image: art.local:8081/docker/discovery-service:latest
         ports:
         - containerPort: 8761
           protocol: TCP
       imagePullSecrets:
-      - name: regcred
+      - name: localregcred
