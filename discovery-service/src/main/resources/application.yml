@@ -5,7 +5,7 @@ eureka:
   numberRegistrySyncRetries: 1
   instance:
     preferIpAddress: false
-    hostname: localhost
+    hostname: eureka-server
   client:
     registerWithEureka: false
     fetchRegistry: false
