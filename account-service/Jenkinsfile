@@ -18,7 +18,7 @@ node {
 
         stage('Image') {
             dir ('account-service') {
-                def app = docker.build "127.0.0.1:30400/sample-spring-microservices/account-service:${env.version}"
+                def app = docker.build "art.local:30400/sample-spring-microservices/account-service:${env.version}"
                 app.push()
             }
         }
