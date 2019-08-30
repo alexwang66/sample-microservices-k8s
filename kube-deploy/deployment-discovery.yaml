@@ -3,15 +3,18 @@ kind: Service
 metadata:
   name: eureka-server
   namespace: default
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: x-chkp-management=cpmanagement,x-chkp-template=cpasg,x-chkp-forwarding=HTTP-9080-3000
+  labels:
+    app: eureka-server
 spec:
   ports:
-    -
-      port: 8761
+    - port: 3000
       targetPort: 8761
-      nodePort: 30191
   selector:
     app: eureka-server
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -28,9 +31,10 @@ spec:
     spec:
       containers:
       - name: discovery-service
-        image: art.local:8081/docker/discovery-service:latest
+        image: docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:latest
         ports:
         - containerPort: 8761
           protocol: TCP
       imagePullSecrets:
-      - name: localregcred
+      - name: artifactory-docker-registry
+
