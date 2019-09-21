@@ -16,13 +16,13 @@ node {
 
         stage('Image') {
             dir ('discovery-service') {
-                def app = docker.build "localhost:5000/discovery-service:${env.version}"
+                def app = docker.build "docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:${env.version}"
                 app.push()
             }
         }
 
         stage ('Run') {
-            docker.image("localhost:5000/discovery-service:${env.version}").run('-p 8761:8761 -h discovery --name discovery')
+            docker.image("docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:${env.version}").run('-p 8761:8761 -h discovery --name discovery')
         }
 
         stage ('Final') {
