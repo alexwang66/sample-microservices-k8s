@@ -4,7 +4,7 @@ server:
 eureka:  
   client:
     serviceUrl:
-      defaultZone: ${DISCOVERY_URL:http://192.168.99.100:30761}/eureka/
+      defaultZone: ${DISCOVERY_URL:http://eureka-server:8761}/eureka/
   instance:
     leaseRenewalIntervalInSeconds: 1
     leaseExpirationDurationInSeconds: 2
