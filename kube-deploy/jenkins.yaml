@@ -11,7 +11,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/mnt/data/jenkins-home"
+    path: "/data/jenkins-home"
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
         - name: jenkins
-          image: jenkins:2.60.3-alpine
+          image: jenkins/jenkins:lts
           ports:
             - containerPort: 8080
           volumeMounts:
