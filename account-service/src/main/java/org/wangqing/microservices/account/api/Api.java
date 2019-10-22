@@ -17,6 +17,8 @@ public class Api {
 	private List<Account> accounts;
 	
 	protected Logger logger = Logger.getLogger(Api.class.getName());
+
+	private String serviceIsReady;
 	
 	public Api() {
 		accounts = new ArrayList<>();
@@ -29,10 +31,10 @@ public class Api {
 		accounts.add(new Account(7, 2, "777777"));
 	}
 	
-	@RequestMapping("/accounts/{number}")
-	public Account findByNumber(@PathVariable("number") String number) {
-		logger.info(String.format("Account.findByNumber(%s)", number));
-		return accounts.stream().filter(it -> it.getNumber().equals(number)).findFirst().get();
+	@RequestMapping("/")
+	public String findByNumber(String number) {
+		serviceIsReady = "Account service is ready!";
+		return serviceIsReady;
 	}
 	
 	@RequestMapping("/accounts/customer/{customer}")
