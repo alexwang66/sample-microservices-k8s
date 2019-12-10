@@ -27,7 +27,7 @@ public class Api {
 	
 	@RequestMapping("/")
 	public String findByNumber(String number) {
-		serviceIsReady = "Hi JFrog webinar!";
+		serviceIsReady = "Hi JFrog webinar 2!";
 		return serviceIsReady;
 	}
 	

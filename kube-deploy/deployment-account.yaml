@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: 47.93.114.82/docker-release-local2/sample-spring-microservices/account-service:3
+        image: 47.93.114.82/docker-release-local2/sample-spring-microservices/account-service:5
         ports:
         - containerPort: 2222
           protocol: TCP
