@@ -1,34 +1,185 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 node {
-
-    withMaven(maven:'maven') {
-
-        stage('Checkout') {
-            git url: 'https://github.com/piomin/sample-spring-microservices.git', credentialsId: 'github-piomin', branch: 'master'
+	def mvnHome
+	def artiServer
+	def rtMaven
+	def buildInfo
+	def artifactVersion
+    def arti_api_key
+	stage('Prepare') {
+		artiServer = Artifactory.server('artiha-demo')
+		//artiServer = Artifactory.server('artifactory-test')
+		buildInfo = Artifactory.newBuildInfo()
+		buildInfo.env.capture = true
+		rtMaven = Artifactory.newMavenBuild()
+        withCredentials([string(credentialsId: 'Artifactory_api_key', variable: 'value')]) {
+            arti_api_key = "${value}"
         }
+	}
+	stage('SCM') {
+		git url: 'git@github.com:alexwang66/sample-microservices-k8s.git', credentialsId: 'wangqing'
+	}
+	//执行maven构建打包
+	stage('maven build'){
+		rtMaven.resolver server: artiServer, releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot'
+		rtMaven.deployer server: artiServer, releaseRepo: 'libs-stage-local', snapshotRepo: 'libs-snapshot-local'
+		rtMaven.tool = 'maven'
 
-        stage('Build') {
-            sh 'mvn clean install'
+        rtMaven.run pom: 'discovery-service/pom.xml', goals: 'clean install', buildInfo: buildInfo
+		artiServer.publishBuildInfo buildInfo
+        pom = readMavenPom file: 'discovery-service/pom.xml'
 
-            def pom = readMavenPom file:'pom.xml'
-            print pom.version
-            env.version = pom.version
+         artifactVersion = pom.version
+         echo artifactVersion
+	}
+	stage('Sonar') {
+		// Sonar scan
+        def scannerHome = tool 'sonarClient';
+        withSonarQubeEnv('sonar') {
+            sh "${scannerHome}/bin/sonar-runner -Dsonar.projectKey=spring-microservice-k8s -Dsonar.sources=discovery-service/src"
         }
+	}
+	//添加sonar扫描结果到包上
+	stage("add sonarResult"){
 
-        stage('Image') {
-            dir ('discovery-service') {
-                def app = docker.build "docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:${env.version}"
-                app.push()
+
+		//获取最新版本号
+
+		//获取sonar扫描结果
+		def getSonarIssuesCmd = "curl  GET -v http://47.93.114.82:9000/api/issues/search?componentRoots=${JOB_NAME}";
+		process = [ 'bash', '-c', getSonarIssuesCmd].execute().text
+
+		//增加sonar扫描结果到artifactory
+		def jsonSlurper = new JsonSlurper()
+		def issueMap = jsonSlurper.parseText(process);
+		commandText = "curl  -X PUT \"http://demo.jfrogchina.com/artifactory/api/storage/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=quality.gate.sonarUrl=http://47.93.114.82:9000/dashboard/index/${JOB_NAME};quality.gate.sonarIssue="+issueMap.total+"\" -uadmin:${arti_api_key}";
+
+		echo commandText
+		process = [ 'bash', '-c', commandText].execute().text
+	}
+	stage('add jiraResult'){
+      def requirements = getRequirementsIds();
+      echo "requirements : ${requirements}"
+      //def revisionIds = getRevisionIds();
+      def revisionIds = "";
+
+
+      echo "revisionIds : ${revisionIds}"
+      commandJira = "curl  -X PUT \"http://demo.jfrogchina.com/artifactory/api/storage/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=project.issueLink=http://jira.jfrogchina.com:8081/browse/JIEW-" + env.BUILD_NUMBER +";project.issues=JIEW-"+ env.BUILD_NUMBER +"\" -uadmin:${arti_api_key}";
+	  echo commandJira
+	  process = [ 'bash', '-c', commandJira].execute().text
+
+   }
+	 //进行测试
+	stage('basic test'){
+		echo "add test step"
+	}
+
+	stage('xray scan'){
+		def xrayConfig = [
+          'buildName'     : env.JOB_NAME,
+          'buildNumber'   : env.BUILD_NUMBER,
+          'failBuild'     : false
+        ]
+        def xrayResults = artiServer.xrayScan xrayConfig
+        echo xrayResults as String
+
+		 xrayScanResultCMD = "curl  -X PUT \"http://demo.jfrogchina.com/artifactory/api/storage/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=security.xray.scan=Passed;project.issues=JIEW-"+ env.BUILD_NUMBER +"\" -uadmin:${arti_api_key}";
+	  process = [ 'bash', '-c', xrayScanResultCMD].execute().text
+	}
+
+
+
+	//promotion操作，进行包的升级
+	   stage('promotion'){
+ 		def promotionConfig = [
+ 			'buildName'   : buildInfo.name,
+ 			'buildNumber' : buildInfo.number,
+ 			'targetRepo'  : 'libs-release-local',
+ 			'comment': 'Passed the functional test, Sonar scanning, promote this build',
+ 			'sourceRepo':' libs-stage-local',
+ 			'status': 'Released',
+ 			'includeDependencies': false,
+ 			'failFast': true,
+ 			'copy': true
+ 		]
+ 		artiServer.promote promotionConfig
+
+		copyCommand = "curl -uadmin:${arti_api_key} -X POST http://47.93.114.82/artifactory/api/copy/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?to=/libs-release-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar"
+	     echo copyCommand
+	     process = [ 'bash', '-c', copyCommand].execute().text
+	}
+	//进行部署
+	stage('deploy') {
+		/*
+		def deployCmd = "ansible 127.0.0.1 -m get_url -a 'url=http://demo.jfrogchina.com/artifactory/libs-release-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar  dest=/home/tomcat/apache-tomcat-8.5.33/webapps/demo.war force=true url_username=admin url_password=${arti_api_key}'"
+
+		echo deployCmd
+		process = [ 'bash', '-c', deployCmd].execute().text
+
+		commandText = "curl  -X PUT \"http://demo.jfrogchina.com/artifactory/libs-release-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=deploy.tool=ansible;deploy.env=127.0.0.1\" -uadmin:${arti_api_key}";
+		echo commandText
+		[ 'bash', '-c', commandText].execute().text
+
+		def stopCmd = "ansible 127.0.0.1 -m shell -a '/home/tomcat/apache-tomcat-8.5.33/bin/shutdown.sh'"
+		echo stopCmd
+		[ 'bash', '-c', stopCmd].execute().text
+		def startCmd = "ansible 127.0.0.1 -m shell -a '/home/tomcat/apache-tomcat-8.5.33/bin/startup.sh'"
+		echo startCmd
+		[ 'bash', '-c', startCmd].execute().text
+		*/
+
+		def downloadCmd = "jfrog rt dl libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar";
+		process = [ 'bash', '-c', downloadCmd].execute().text
+
+
+		def copyCommand ="cp org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar /root/tools/apache-tomcat-8.5.29/webapps/demo.war"
+
+		echo "deploy war..." + copyCommand
+		[ 'bash', '-c', copyCommand].execute().text
+
+		//Set deploy meta data
+		commandText = "curl  -X PUT \"http://demo.jfrogchina.com/artifactory/api/storage/libs-release-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=deploy.tool=ansible;deploy.env=prod\" -uadmin:${arti_api_key}";
+		echo commandText
+		[ 'bash', '-c', commandText].execute().text
+
+	}
+}
+
+@NonCPS
+def getRequirementsIds(){
+    def reqIds = "";
+    final changeSets = currentBuild.changeSets
+    echo 'changeset count:'+ changeSets.size().toString()
+    final changeSetIterator = changeSets.iterator()
+    while (changeSetIterator.hasNext()) {
+        final changeSet = changeSetIterator.next();
+        def logEntryIterator = changeSet.iterator();
+        while (logEntryIterator.hasNext()) {
+            final logEntry = logEntryIterator.next()
+            def patten = ~/#[\w\-_\d]+/;
+            def matcher = (logEntry.getMsg() =~ patten);
+            def count = matcher.getCount();
+            for (int i = 0; i < count; i++){
+                reqIds += matcher[i].replace('#', '') + ","
             }
         }
-
-        stage ('Run') {
-            docker.image("docker-release-local2.demo.jfrogchina.com/sample-spring-microservices/discovery-service:${env.version}").run('-p 8761:8761 -h discovery --name discovery')
-        }
-
-        stage ('Final') {
-            build job: 'account-service-pipeline', wait: false
-        }      
-
     }
-
+    return reqIds;
+}
+@NonCPS
+ def getRevisionIds(){
+    def reqIds = "";
+    final changeSets = currentBuild.changeSets
+    final changeSetIterator = changeSets.iterator()
+    while (changeSetIterator.hasNext()) {
+        final changeSet = changeSetIterator.next();
+        def logEntryIterator = changeSet.iterator();
+        while (logEntryIterator.hasNext()) {
+            final logEntry = logEntryIterator.next()
+            reqIds += logEntry.getRevision() + ","
+        }
+    }
+    return reqIds
 }
