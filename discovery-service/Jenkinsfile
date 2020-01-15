@@ -126,16 +126,10 @@
                 artiServer.download(downloadSpec, buildInfo)
             }
             stage('Build Image and Deploy') {
-                    def tagName='47.93.114.82/docker-stage-local/sample-spring-microservices/discovery-service:'+env.BUILD_NUMBER
-                    docker.build(tagName)
-                    def artDocker= Artifactory.docker server: artiServer
-                    buildInfo = artDocker.push(tagName, 'docker-stage-local/')
+                sh 'docker build -t 47.93.114.82/docker-stage-local/sample-spring-microservices/discovery-service:18 .'
+                 sh 'docker push 47.93.114.82/docker-stage-local/sample-spring-microservices/discovery-service:18'
 
-                    artiServer.publishBuildInfo(buildInfo)
-                    //sh 'sed -E "s/@/$BUILD_NUMBER/" retag.json > retag_out.json'
-                    //sh 'cat retag_out.json'
-                    //def retagstr=curlstr+"api/docker/docker-dev-local/v2/promote' -X POST -H 'Content-Type: application/json' -T retag_out.json"
-                    //sh retagstr
+
                }
 
         }
