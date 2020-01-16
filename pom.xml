@@ -26,5 +26,4 @@
         <module>zipkin-service</module>
         <module>config-service</module>
     </modules>
-
 </project>
