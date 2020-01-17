@@ -149,7 +149,7 @@
         while (changeSetIterator.hasNext()) {
             final changeSet = changeSetIterator.next();
             def logEntryIterator = changeSet.iterator();
-            echo 'log messages ' + logEntry.getMsg();
+
             while (logEntryIterator.hasNext()) {
                 final logEntry = logEntryIterator.next()
                 def patten = ~/#[\w\-_\d]+/;
