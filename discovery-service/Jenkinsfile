@@ -66,7 +66,7 @@
 
 
           echo "revisionIds : ${revisionIds}"
-          commandJira = "curl  -X PUT \"http://47.93.114.82/artifactory/api/storage/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=project.issueLink=http://jira.jfrogchina.com:8081/browse/JIEW-" + env.BUILD_NUMBER +";project.issues=JIEW-"+ env.BUILD_NUMBER +"\" -uadmin:${arti_api_key}";
+          commandJira = "curl  -X PUT \"http://47.93.114.82/artifactory/api/storage/libs-stage-local/org/wangqing/sample-spring-microservices/discovery-service/"+artifactVersion+"/discovery-service-"+artifactVersion+".jar?properties=project.issueLink=http://jira.jfrogchina.com:8081/browse/"+ requirements +";project.issues=JIEW-"+ env.BUILD_NUMBER +"\" -uadmin:${arti_api_key}";
           echo commandJira
           process = [ 'bash', '-c', commandJira].execute().text
 
