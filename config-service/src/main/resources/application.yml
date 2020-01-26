@@ -1,15 +1,15 @@
-  spring.application.name=waiter-service
+#  spring.application.name=waiter-service
 
     #spring.cloud.config.uri=http://localhost:8888
-    spring.cloud.config.discovery.enabled=true
-    spring.cloud.config.discovery.service-id=configserver
+#    spring.cloud.config.discovery.enabled=true
+#    spring.cloud.config.discovery.service-id=configserver
 
 spring:
   cloud:
     config:
       discovery:
         enabled: true
-        uri: https://github.com/alexwang66/geektime-spring-family.git
+        uri: https://github.com/alexwang66/sample-microservices-k8s.git
 
 server:
   port: ${PORT:4444}
@@ -19,7 +19,7 @@ eureka:
     serviceUrl:
       defaultZone: ${DISCOVERY_URL:http://eureka-server:8761}/eureka/
   instance:
-    leaseRenewalIntervalInSeconds: 1
+    `leaseRenewalIntervalInSeconds: 1
     leaseExpirationDurationInSeconds: 2
           
 ribbon:
