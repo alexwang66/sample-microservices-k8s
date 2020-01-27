@@ -29,9 +29,9 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: 47.93.114.82/docker-release-local2/sample-spring-microservices/account-service:5
+        image: art.local:8081/docker/sample-spring-microservices/account-service:5
         ports:
         - containerPort: 2222
           protocol: TCP
       imagePullSecrets:
-      - name: regcredip
+      - name: regcred-local
