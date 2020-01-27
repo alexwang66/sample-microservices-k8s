@@ -6,10 +6,10 @@ metadata:
     run: gateway-server
 spec:
   ports:
-  - port: 5555
-    protocol: TCP
-    targetPort: 5555
-    nodePort: 30555
+    - name: port3
+      protocol: TCP
+      port: 8765
+      nodePort: 30333
   selector:
     run: gateway-service
   type: NodePort
@@ -31,7 +31,7 @@ spec:
       - name: gateway-service
         image: art.local:8081/docker/sample-spring-microservices/gateway-service:latest
         ports:
-        - containerPort: 5555
+        - containerPort: 8765
           protocol: TCP
       imagePullSecrets:
       - name: regcred-local

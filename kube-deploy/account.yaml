@@ -6,10 +6,10 @@ metadata:
     run: account-server
 spec:
   ports:
-  - port: 2222
-    protocol: TCP
-    targetPort: 2222
-    nodePort: 30222
+    - name: port2
+      protocol: TCP
+      port: 2222
+      nodePort: 30222
   selector:
     run: account-service
   type: NodePort
@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: art.local:8081/docker/sample-spring-microservices/account-service:5
+        image: art.local:8081/docker/sample-spring-microservices/account-service:latest
         ports:
         - containerPort: 2222
           protocol: TCP

@@ -26,7 +26,7 @@ ribbon:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone:  ${DISCOVERY_URL:http://eureka-server:8761}/eureka/
     registerWithEureka: false
       
 server:

@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: zipkin-service
-        image: art.local:8081/docker/sample-spring-microservices/zipkin-service:5
+        image: art.local:8081/docker/sample-spring-microservices/zipkin-service:latest
         ports:
         - containerPort: 6666
           protocol: TCP
