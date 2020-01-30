@@ -1,17 +1,19 @@
-# Default values for chart.
+# Default values for discovery.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  rigistry: art.local:8081
+  repository: art.local:8081/docker/sample-spring-microservices/discovery-service
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
-  type: ClusterIP
-  port: 80
+  type: NodePort
+  port: 8761
+  nodePort: 31002
 
 ingress:
   enabled: false

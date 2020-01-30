@@ -17,7 +17,8 @@ eureka:
   client:
     serviceUrl:
       defaultZone:  ${DISCOVERY_URL:http://eureka-server:8761}/eureka/
-#  instance:
+  instance:
+    preferIpAddress: true
 #    leaseRenewalIntervalInSeconds: 1
 #    leaseExpirationDurationInSeconds: 2
 #    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}

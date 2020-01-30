@@ -1,22 +1,22 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ template "chart.fullname" . }}
+  name: {{ template "discovery.fullname" . }}
   labels:
-    app: {{ template "chart.name" . }}
-    chart: {{ template "chart.chart" . }}
+    app: {{ template "discovery.name" . }}
+    chart: {{ template "discovery.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ template "chart.name" . }}
+      app: {{ template "discovery.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "chart.name" . }}
+        app: {{ template "discovery.name" . }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8761
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -38,6 +38,8 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- with .Values.nodeSelector }}
+        imagePullSecrets:
+        - name: regcred-local
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}

@@ -1,19 +1,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "chart.fullname" . }}
+  name: {{ template "discovery.fullname" . }}
   labels:
-    app: {{ template "chart.name" . }}
-    chart: {{ template "chart.chart" . }}
+    app: {{ template "discovery.name" . }}
+    chart: {{ template "discovery.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      nodePort: {{ .Values.service.nodePort }}
       protocol: TCP
       name: http
   selector:
-    app: {{ template "chart.name" . }}
+    app: {{ template "discovery.name" . }}
     release: {{ .Release.Name }}
