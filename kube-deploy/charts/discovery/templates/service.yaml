@@ -1,19 +1,36 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "discovery.fullname" . }}
+  name: eureka-server
+  namespace: default
   labels:
-    app: {{ template "discovery.name" . }}
-    chart: {{ template "discovery.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    run: eureka-server
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      nodePort: {{ .Values.service.nodePort }}
+    - name: port1
       protocol: TCP
-      name: http
+      port: 8761
+      nodePort: 31002
   selector:
-    app: {{ template "discovery.name" . }}
-    release: {{ .Release.Name }}
+    run: eureka-server
+  type: NodePort
+
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: {{ template "discovery.fullname" . }}
+#  labels:
+#    app: {{ template "discovery.name" . }}
+#    chart: {{ template "discovery.chart" . }}
+#    release: {{ .Release.Name }}
+#    heritage: {{ .Release.Service }}
+#spec:
+#  type: {{ .Values.service.type }}
+#  ports:
+#    - name: port1
+#      port: {{ .Values.service.port }}
+#      nodePort: {{ .Values.service.nodePort }}
+#      protocol: TCP
+#  selector:
+#    app: {{ template "discovery.name" . }}
+#    release: {{ .Release.Name }}

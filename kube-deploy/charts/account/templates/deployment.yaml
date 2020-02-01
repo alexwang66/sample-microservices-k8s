@@ -1,21 +1,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: eureka-server
+  name: account-service
   labels:
-    run: eureka-server
+    run: account-service
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        run: eureka-server
+        run: account-service
     spec:
       containers:
-        - name: discovery-service
-          image: art.local:8081/docker/sample-spring-microservices/discovery-service:latest
+        - name: account-service
+          image: art.local:8081/docker/sample-spring-microservices/account-service:latest
           ports:
-            - containerPort: 8761
+            - containerPort: 2222
               protocol: TCP
       imagePullSecrets:
         - name: regcred-local
@@ -24,22 +24,22 @@ spec:
 #apiVersion: apps/v1beta2
 #kind: Deployment
 #metadata:
-#  name: {{ template "discovery.fullname" . }}
+#  name: {{ template "account.fullname" . }}
 #  labels:
-#    app: {{ template "discovery.name" . }}
-#    chart: {{ template "discovery.chart" . }}
+#    app: {{ template "account.name" . }}
+#    chart: {{ template "account.chart" . }}
 #    release: {{ .Release.Name }}
 #    heritage: {{ .Release.Service }}
 #spec:
 #  replicas: {{ .Values.replicaCount }}
 #  selector:
 #    matchLabels:
-#      app: {{ template "discovery.name" . }}
+#      app: {{ template "account.name" . }}
 #      release: {{ .Release.Name }}
 #  template:
 #    metadata:
 #      labels:
-#        app: {{ template "discovery.name" . }}
+#        app: {{ template "account.name" . }}
 #        release: {{ .Release.Name }}
 #    spec:
 #      containers:
@@ -48,7 +48,7 @@ spec:
 #          imagePullPolicy: {{ .Values.image.pullPolicy }}
 #          ports:
 #            - name: http
-#              containerPort: 8761
+#              containerPort: {{ .Values.service.port }}
 #              protocol: TCP
 #          livenessProbe:
 #            httpGet:
@@ -61,8 +61,6 @@ spec:
 #          resources:
 #{{ toYaml .Values.resources | indent 12 }}
 #    {{- with .Values.nodeSelector }}
-#        imagePullSecrets:
-#        - name: regcred-local
 #      nodeSelector:
 #{{ toYaml . | indent 8 }}
 #    {{- end }}
