@@ -1,21 +1,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: eureka-server
+  name: {{ template "discovery.name" . }}
   labels:
-    run: eureka-server
+    run: {{ template "discovery.name" . }}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        run: eureka-server
+        run: {{ template "discovery.name" . }}
     spec:
       containers:
         - name: discovery-service
-          image: art.local:8081/docker/sample-spring-microservices/discovery-service:latest
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 8761
+            - containerPort: {{ .Values.service.port}}
               protocol: TCP
       imagePullSecrets:
         - name: regcred-local
