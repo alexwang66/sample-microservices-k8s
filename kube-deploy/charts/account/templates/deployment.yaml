@@ -1,21 +1,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: account-service
+  name: {{ template "account.name" . }}
   labels:
-    run: account-service
+    run: {{ template "account.name" . }}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        run: account-service
+        run: {{ template "account.name" . }}
     spec:
       containers:
-        - name: account-service
-          image: art.local:8081/docker/sample-spring-microservices/account-service:latest
+        - name: {{ template "account.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 2222
+            - containerPort: {{ .Values.service.port }}
               protocol: TCP
       imagePullSecrets:
         - name: regcred-local

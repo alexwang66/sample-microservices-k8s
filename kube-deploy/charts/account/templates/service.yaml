@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: account-service
+  name: {{ template "account.name" . }}
   labels:
-    run: account-server
+    run: {{ template "account.name" . }}
 spec:
   ports:
     - name: port2
       protocol: TCP
-      port: 2222
-      nodePort: 30222
+      port: {{ .Values.service.port }}
+      nodePort: {{ .Values.service.nodePort }}
   selector:
-    run: account-service
+    run: {{ template "account.name" . }}
   type: NodePort
 #apiVersion: v1
 #kind: Service
