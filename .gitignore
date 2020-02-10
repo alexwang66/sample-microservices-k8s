@@ -3,3 +3,5 @@
 **/*.iml
 **/*.idea/
 *.tgz
+**/.sts4-cache/*
+
